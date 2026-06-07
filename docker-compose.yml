@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: forest-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: forest_patrol
+      MYSQL_USER: forest
+      MYSQL_PASSWORD: forest123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - forest-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: forest-backend
+    ports:
+      - "8082:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/forest_patrol?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: forest
+      SPRING_DATASOURCE_PASSWORD: forest123
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - forest-network
+
+  frontend:
+    build: ./frontend
+    container_name: forest-frontend
+    ports:
+      - "8083:80"
+    depends_on:
+      - backend
+    networks:
+      - forest-network
+
+  verification:
+    build: ./verification
+    container_name: forest-verification
+    depends_on:
+      - backend
+    networks:
+      - forest-network
+    command: ["sh", "-c", "sleep 30 && python3 verify.py"]
+
+volumes:
+  mysql-data:
+
+networks:
+  forest-network:
+    driver: bridge
