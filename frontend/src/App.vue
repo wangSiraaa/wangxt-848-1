@@ -73,42 +73,28 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { UserFilled } from '@element-plus/icons-vue'
+import store from '@/store'
 
 const route = useRoute()
 const router = useRouter()
 const activeMenu = ref(route.path)
 
-const roles = [
-  { id: 1, username: 'ranger1', name: '张三', role: 'RANGER' },
-  { id: 5, username: 'leader1', name: '钱七', role: 'LEADER' },
-  { id: 6, username: 'commander1', name: '孙八', role: 'COMMANDER' }
-]
-
-const currentRoleIndex = ref(0)
-const currentUser = computed(() => roles[currentRoleIndex.value])
-const roleText = computed(() => {
-  const map = { RANGER: '护林员', LEADER: '值班长', COMMANDER: '指挥员' }
-  return map[currentUser.value.role] || '未知'
-})
-
-const isRanger = computed(() => currentUser.value.role === 'RANGER')
-const isLeader = computed(() => currentUser.value.role === 'LEADER')
-const isCommander = computed(() => currentUser.value.role === 'COMMANDER')
+const currentUser = computed(() => store.currentUser)
+const roleText = computed(() => store.roleText)
+const isRanger = computed(() => store.isRanger)
+const isLeader = computed(() => store.isLeader)
+const isCommander = computed(() => store.isCommander)
 
 const switchRole = () => {
-  currentRoleIndex.value = (currentRoleIndex.value + 1) % roles.length
-  ElMessage.success(`已切换到${roleText.value}角色: ${currentUser.value.name}`)
+  const user = store.switchRole()
+  ElMessage.success(`已切换到${store.roleText}角色: ${user.name}`)
   
-  if (isLeader.value && route.path === '/route-checkin') {
-    router.push('/shift-schedule')
-  } else if (isCommander.value && (route.path === '/route-checkin' || route.path === '/shift-schedule')) {
-    router.push('/incident-handle')
-  } else if (isRanger.value && (route.path === '/shift-schedule' || route.path === '/incident-handle')) {
-    router.push('/route-checkin')
+  if (!store.hasPermission(route)) {
+    router.push(store.getDefaultRoute())
   }
 }
 
