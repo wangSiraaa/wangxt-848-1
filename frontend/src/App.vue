@@ -55,6 +55,10 @@
             <el-icon><Tools /></el-icon>
             <span>处置反馈</span>
           </el-menu-item>
+          <el-menu-item v-if="isLeader || isCommander" index="/shift-receipt">
+            <el-icon><CircleCheck /></el-icon>
+            <span>处理回执</span>
+          </el-menu-item>
           <el-menu-item index="/query">
             <el-icon><Search /></el-icon>
             <span>查询统计</span>

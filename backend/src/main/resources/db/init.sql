@@ -110,6 +110,28 @@ CREATE TABLE IF NOT EXISTS incident_feedback (
     INDEX idx_incident_id (incident_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS shift_receipt (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    shift_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    handler_id BIGINT NOT NULL,
+    route_completion VARCHAR(20) NOT NULL COMMENT 'COMPLETED-完成, PARTIAL-部分完成, NOT_STARTED-未开始',
+    total_checkpoints INT NOT NULL DEFAULT 0,
+    completed_checkpoints INT NOT NULL DEFAULT 0,
+    completion_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    sign_in_time DATETIME,
+    sign_out_time DATETIME,
+    handle_remark VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (shift_id) REFERENCES work_shift(id),
+    FOREIGN KEY (user_id) REFERENCES sys_user(id),
+    FOREIGN KEY (handler_id) REFERENCES sys_user(id),
+    UNIQUE KEY uk_shift_user (shift_id, user_id),
+    INDEX idx_shift_id (shift_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_handler_id (handler_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 INSERT INTO sys_user (username, name, role, phone) VALUES
 ('ranger1', '张三', 'RANGER', '13800138001'),
 ('ranger2', '李四', 'RANGER', '13800138002'),

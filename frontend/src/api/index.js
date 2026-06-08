@@ -54,3 +54,17 @@ export const queryAPI = {
   queryShifts: (params) => request.get('/query/shifts', { params }),
   queryIncidents: (params) => request.get('/query/incidents', { params })
 }
+
+export const receiptAPI = {
+  list: () => request.get('/shift-receipts'),
+  getByShift: (shiftId) => request.get(`/shift-receipts/shift/${shiftId}`),
+  getByUser: (userId) => request.get(`/shift-receipts/user/${userId}`),
+  getByShiftAndUser: (shiftId, userId) => request.get(`/shift-receipts/shift/${shiftId}/user/${userId}`),
+  get: (id) => request.get(`/shift-receipts/${id}`),
+  create: (data) => request.post('/shift-receipts', data),
+  createQuick: (shiftId, userId, handlerId, handleRemark) => request.post('/shift-receipts/quick', null, {
+    params: { shiftId, userId, handlerId, handleRemark }
+  }),
+  update: (id, data) => request.put(`/shift-receipts/${id}`, data),
+  delete: (id) => request.delete(`/shift-receipts/${id}`)
+}

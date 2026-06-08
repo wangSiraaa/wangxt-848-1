@@ -38,6 +38,12 @@ const routes = [
     name: 'Query',
     component: () => import('@/views/Query.vue'),
     meta: { title: '查询统计', roles: ['RANGER', 'LEADER', 'COMMANDER'] }
+  },
+  {
+    path: '/shift-receipt',
+    name: 'ShiftReceipt',
+    component: () => import('@/views/ShiftReceipt.vue'),
+    meta: { title: '处理回执', roles: ['LEADER', 'COMMANDER'] }
   }
 ]
 
