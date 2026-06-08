@@ -2,11 +2,11 @@ package com.forest.patrol.config;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,7 +26,12 @@ public class JacksonConfig {
             DateTimeFormatter.ofPattern("HH:mm")
     };
 
-    public static class CustomLocalTimeDeserializer extends JsonDeserializer<LocalTime> {
+    public static class CustomLocalTimeDeserializer extends StdDeserializer<LocalTime> {
+
+        public CustomLocalTimeDeserializer() {
+            super(LocalTime.class);
+        }
+
         @Override
         public LocalTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             String text = p.getText().trim();
@@ -38,15 +43,20 @@ public class JacksonConfig {
             }
             throw new IOException("无法解析时间: " + text + "，支持格式: HH:mm:ss 或 HH:mm");
         }
+
+        @Override
+        public Class<LocalTime> handledType() {
+            return LocalTime.class;
+        }
     }
 
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        return builder -> {
-            builder.serializers(new LocalDateSerializer(DATE_FORMATTER));
-            builder.deserializers(new LocalDateDeserializer(DATE_FORMATTER));
-            builder.serializers(new LocalTimeSerializer(TIME_FORMATTER_OUTPUT));
-            builder.deserializers(new CustomLocalTimeDeserializer());
-        };
+    public SimpleModule customJacksonModule() {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(LocalDate.class, new LocalDateSerializer(DATE_FORMATTER));
+        module.addDeserializer(LocalDate.class, new LocalDateDeserializer(DATE_FORMATTER));
+        module.addSerializer(LocalTime.class, new LocalTimeSerializer(TIME_FORMATTER_OUTPUT));
+        module.addDeserializer(LocalTime.class, new CustomLocalTimeDeserializer());
+        return module;
     }
 }
